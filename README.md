@@ -1,4 +1,4 @@
-# AuthMaster_Pode_Project
+# AuthMaster_Node_Project
 
 🔐 AuthMaster - API de Autenticación con Bun y TypeScript
 
