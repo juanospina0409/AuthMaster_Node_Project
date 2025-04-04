@@ -29,21 +29,29 @@ export const AuthenticatedToken = async (
     //["Bearer", "alksdfjlaoierwhtlioajdsflgkjadfslgk"]
     if (!token) {
         res.statusCode = 401;
-        res.end(JSON.stringify({message: "Unauthorized", reason: "Token doesn't exist."}));
+        res.end(JSON.stringify({ message: "Unauthorized", reason: "Token doesn't exist." }));
         return false;
     }
     if (isTokenRevoked(token)) {
         res.statusCode = 403;
-        res.end(JSON.stringify({message: "Forbidden", reason: "Token has been revoked."}));
+        res.end(JSON.stringify({ message: "Forbidden", reason: "Token has been revoked." }));
         return false;
     }
     try {
+        console.log("🔍 Clave secreta en authentication.ts:", config.jwtSecret);
+        console.log("🔍 Token antes de verificar:", token); // Verifica el token usando la clave secreta
         const decoded = verify(token, config.jwtSecret);
+        console.log("✅ Token decodificado correctamente:", decoded); // Agregar log
         req.user = decoded;
+        console.log("✅ req.user asignado correctamente:", req.user);
         return true;
-    } catch (_err) {
+    } catch (err) {
+        console.error("❌ Error al verificar token:", err);
         res.statusCode = 403;
-        res.end(JSON.stringify({message: "Forbidden", reason: "Token has been revoked."}));
+        res.end(JSON.stringify({
+            message: "Forbidden",
+            reason: err instanceof Error ? err.message : "Token verification failed."
+        }));
         return false;
     }
 }

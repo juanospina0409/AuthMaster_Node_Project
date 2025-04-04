@@ -17,7 +17,7 @@ export const authRouter = async (req: IncomingMessage, res: ServerResponse) => {
 
     console.log("📌 Método recibido:", method); // Agregar log new
     if (path === "/auth/register" && method === HttpMethod.POST) { //new
-        console.log(`✅ Ruta encontrada: ${method} /auth/register`); //new
+        console.log(`✅ Ruta encontrada: ${method} ${path}`); //new
         const body = await parseBody(req)
         console.log("📩 Body recibido:", body); //new
         const result = safeParse(authSchema, body)
@@ -34,7 +34,7 @@ export const authRouter = async (req: IncomingMessage, res: ServerResponse) => {
             console.log("✅ Usuario creado:", user); //new
             res.statusCode = 201
             res.end(JSON.stringify(user))
-            return; // 🔴 IMPORTANTE: Evita que el código continúe ejecutándose new
+            return
         } catch (err) {
             console.error("❌ Error al crear usuario:", err); //new
             if (err instanceof Error) {
@@ -43,7 +43,7 @@ export const authRouter = async (req: IncomingMessage, res: ServerResponse) => {
             else {
                 res.end(JSON.stringify({message: "Internal Server Error"}))
             }
-            return; // 🔴 Evita más ejecuciones new
+            return
         }
     }
     if (path === "/auth/login" && method === HttpMethod.POST) {
@@ -65,7 +65,7 @@ export const authRouter = async (req: IncomingMessage, res: ServerResponse) => {
         } else { //new
             console.log("✅ Usuario encontrado:", user); //new
         }
-
+        console.log("🛠️ Clave secreta en auth.ts: ", config.jwtSecret);
         const accessToken = sign(
             {id: user.id, email: user.email, role: user.role},
             config.jwtSecret,
@@ -74,7 +74,7 @@ export const authRouter = async (req: IncomingMessage, res: ServerResponse) => {
         const refreshToken = sign(
             {id: user.id},
             config.jwtSecret,
-            {expiresIn: "1d"}
+            {expiresIn: "24h"}
         )
 
         user.refreshToken = refreshToken

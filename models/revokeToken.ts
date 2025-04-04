@@ -17,5 +17,7 @@ export const addRevokeToken = (token: string): void => {
  * @returns {boolean} A boolean indicating whether the token has been revoked.
  */
 export const isTokenRevoked = (token: string): boolean => {
+  console.log("Checking revoked tokens list:", RevokedToken);
+  console.log("Is token revoked?", RevokedToken.has(token));
   return RevokedToken.has(token);
 }

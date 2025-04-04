@@ -9,23 +9,49 @@ export const characterRouter = async (
     req: IncomingMessage,
     res: ServerResponse
 ) => {
-    const { method, url } = req
 
-    if (await AuthenticatedToken(req as AuthenticatedRequest, res)) {
-        res.statusCode = 401
-        res.end(JSON.stringify({ message: "Unauthorized" }))
-        return
+    console.log("➡️ Nueva solicitud:", req.method, req.url); //new
+    const path = req.url?.split("?")[0]; // Normaliza la URL new
+    console.log("📌 URL Procesada:", path); // new
+    const { method } = req
+
+    if (!(await AuthenticatedToken(req as AuthenticatedRequest, res))) {
+        res.statusCode = 401;
+        res.end(JSON.stringify({ message: "Unauthorized" }));
+        return;
     }
 
-    if (url === "/characters" && method === HttpMethod.GET) {
-        const characters = getAllCharacters()
+    // if (path === "/characters" && method === HttpMethod.GET) {
+    //     console.log(`✅ Ruta encontrada1: ${method} ${path}`);
+    //     const characters = getAllCharacters()
 
-        res.statusCode = 200
-        res.end(JSON.stringify(characters))
-        return
+    //     res.statusCode = 200
+    //     res.end(JSON.stringify(characters))
+    //     return
+    // }
+
+    if (path === "/characters" && method === HttpMethod.GET) {
+        console.log(`✅ Ruta encontrada1: ${method} ${path}`);
+    
+        // Validar el token antes de continuar
+        const isAuthenticated = await AuthenticatedToken(req, res);
+        if (!isAuthenticated) {
+            console.log("❌ Usuario no autenticado");
+            return;
+        }
+    
+        // Si el usuario está autenticado, obtenemos los personajes
+        const characters = getAllCharacters();
+        
+        res.statusCode = 200;
+        res.end(JSON.stringify(characters.length > 0 ? characters : []));
+        return;
     }
-    if (url === "/characters/" && method === HttpMethod.GET) {
-        const id = parseInt(url.split("/").pop() as string, 10)
+
+    
+    if (path === "/characters/" && method === HttpMethod.GET) {
+        console.log(`✅ Ruta encontrada2: ${method} ${path}`);
+        const id = parseInt(path.split("/").pop() as string, 10)
         const character = getCharacterById(id)
 
         if (!character) {
@@ -39,7 +65,8 @@ export const characterRouter = async (
         return
     }
 
-    if (url === "/characters" && method === HttpMethod.POST) {
+    if (path === "/characters" && method === HttpMethod.POST) {
+        console.log(`✅ Ruta encontrada3: ${method} ${path}`);
         if (!(await authorizeRoles(Role.ADMIN, Role.USER)(req as AuthenticatedRequest, res as ServerResponse))) {
             res.statusCode - 403
             res.end(JSON.stringify({message: "Forbidden"}))
@@ -63,14 +90,14 @@ export const characterRouter = async (
         return
     }
 
-    if (url?.startsWith("/characters/") && method === HttpMethod.PATCH) {
+    if (path?.startsWith("/characters/") && method === HttpMethod.PATCH) {
         if (!(await authorizeRoles(Role.ADMIN)(req as AuthenticatedRequest, res))) {
             res.statusCode = 403
             res.end(JSON.stringify({message: "Forbidden"}))
             return
         }
         
-        const id = parseInt(url.split("/").pop() as string, 10)
+        const id = parseInt(path.split("/").pop() as string, 10)
         const body = await parseBody(req)
         const character: Character = body
         const updatedCharacter = updateCharacter(id, character)
@@ -86,14 +113,14 @@ export const characterRouter = async (
         return
     }
 
-    if (url?.startsWith("/characters/") && method === HttpMethod.DELETE) {
+    if (path?.startsWith("/characters/") && method === HttpMethod.DELETE) {
         if (!(await authorizeRoles(Role.ADMIN)(req as AuthenticatedRequest, res))) {
             res.statusCode = 403
             res.end(JSON.stringify({message: "Forbidden"}))
             return
         }
 
-        const id = parseInt(url.split("/").pop() as string, 10)
+        const id = parseInt(path.split("/").pop() as string, 10)
         const success = deleteCharacter(id)
 
         if(!success) {
