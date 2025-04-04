@@ -113,7 +113,7 @@ Guarda el accessToken, ya que lo necesitarás para cerrar sesión.
 Para cerrar sesión, debes incluir el accessToken en la cabecera Authorization.
 CURL:
 
-curl -X POST http://localhost:4000/auth/logout -H "Authorization: Bearer <VALID_TOKEN>"
+curl -X POST http://localhost:4000/auth/logout -H "Authorization: Bearer <ACCESS_TOKEN>"
 
 📌 Respuesta esperada (200 OK):
 
