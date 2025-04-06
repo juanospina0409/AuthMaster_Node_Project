@@ -24,12 +24,21 @@ export const authorizeRoles = (...roles: string[]) => {
         req: AuthenticatedRequest,
         res: ServerResponse,
     ): Promise<boolean> => {
-        const userRole = (req.user as User)?.role
+
+        if (!req.user) {
+            console.warn("❗ req.user no está definido.");
+            res.statusCode = 401
+            res.end(JSON.stringify({ message: "Unauthorized: No user info" }))
+            return false
+        }
+
+        const userRole = (req.user as User).role
         console.log("🔍 Rol detectado:", userRole);
+
         if (!userRole || !roles.includes(userRole)) {
             console.log("⛔ Acceso denegado: Rol no autorizado");
             res.statusCode = 403
-            res.end(JSON.stringify({message: "Forbidden"}))
+            res.end(JSON.stringify({ message: "Forbidden: Role not allowed" }))
             return false
         }
         console.log("✅ Acceso permitido");

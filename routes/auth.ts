@@ -8,18 +8,18 @@ import { sign } from "jsonwebtoken";
 
 export const authRouter = async (req: IncomingMessage, res: ServerResponse) => {
 
-    console.log("➡️ Nueva solicitud:", req.method, req.url); //new
-    const path = req.url?.split("?")[0]; // Normaliza la URL new
-    console.log("📌 URL Procesada:", path); // new
+    console.log("➡️ Nueva solicitud:", req.method, req.url);
+    const path = req.url?.split("?")[0]; // Normalizar la URL
+    console.log("📌 URL Procesada:", path);
 
 
-    const {method, url} = req
+    const {method} = req
 
-    console.log("📌 Método recibido:", method); // Agregar log new
-    if (path === "/auth/register" && method === HttpMethod.POST) { //new
-        console.log(`✅ Ruta encontrada: ${method} ${path}`); //new
+    console.log("📌 Método recibido:", method); // Agregar log
+    if (path === "/auth/register" && method === HttpMethod.POST) {
+        console.log(`✅ Ruta encontrada: ${method} ${path}`);
         const body = await parseBody(req)
-        console.log("📩 Body recibido:", body); //new
+        console.log("📩 Body recibido:", body);
         const result = safeParse(authSchema, body)
 
         if(result.issues) {
@@ -31,12 +31,12 @@ export const authRouter = async (req: IncomingMessage, res: ServerResponse) => {
 
         try {
             const user = await createUser(email, password)
-            console.log("✅ Usuario creado:", user); //new
+            console.log("✅ Usuario creado:", user);
             res.statusCode = 201
             res.end(JSON.stringify(user))
             return
         } catch (err) {
-            console.error("❌ Error al crear usuario:", err); //new
+            console.error("❌ Error al crear usuario:", err);
             if (err instanceof Error) {
                 res.end(JSON.stringify({message: err.message}))
             }
@@ -47,9 +47,9 @@ export const authRouter = async (req: IncomingMessage, res: ServerResponse) => {
         }
     }
     if (path === "/auth/login" && method === HttpMethod.POST) {
-        console.log(`✅ Ruta encontrada: ${method} /auth/login`); //new
+        console.log(`✅ Ruta encontrada: ${method} ${path}`);
         const body = await parseBody(req)
-        console.log("📩 Body recibido:", body); //new
+        console.log("📩 Body recibido:", body);
         const result = safeParse(authSchema, body)
         if (result.issues) {
             res.end(JSON.stringify({message: "Bad Request"}))
@@ -62,8 +62,8 @@ export const authRouter = async (req: IncomingMessage, res: ServerResponse) => {
             res.statusCode = 401
             res.end(JSON.stringify({message: "Invalid Email or Password"}))
             return
-        } else { //new
-            console.log("✅ Usuario encontrado:", user); //new
+        } else {
+            console.log("✅ Usuario encontrado:", user);
         }
         console.log("🛠️ Clave secreta en auth.ts: ", config.jwtSecret);
         const accessToken = sign(
@@ -82,7 +82,7 @@ export const authRouter = async (req: IncomingMessage, res: ServerResponse) => {
         return
     }
     if (path === "/auth/logout" && method === HttpMethod.POST) {
-        console.log(`✅ Ruta encontrada: ${method} /auth/logout`); //new
+        console.log(`✅ Ruta encontrada: ${method} ${path}`);
         const token = req.headers["authorization"]?.split(" ")[1];
         if (token) {
             addRevokeToken(token)
@@ -95,13 +95,13 @@ export const authRouter = async (req: IncomingMessage, res: ServerResponse) => {
                     res.end(JSON.stringify({Message: "Forbidden"}))
                 }
             }
-            console.log("✅ Token Revocado:", token); //new
+            console.log("✅ Token Revocado:", token);
             res.end(JSON.stringify({Message: "Logged out"}))
             return
         }
     }
 
-    console.log("❌ Ruta no encontrada:", req.method, req.url); //new
+    console.log("❌ Ruta no encontrada:", req.method, req.url);
     res.statusCode = 404
     res.end(JSON.stringify({Message: "Endpoint Not Found"}))
 }
