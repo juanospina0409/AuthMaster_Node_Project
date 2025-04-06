@@ -21,15 +21,6 @@ export const characterRouter = async (
         return;
     }
 
-    // if (path === "/characters" && method === HttpMethod.GET) {
-    //     console.log(`✅ Ruta encontrada1: ${method} ${path}`);
-    //     const characters = getAllCharacters()
-
-    //     res.statusCode = 200
-    //     res.end(JSON.stringify(characters))
-    //     return
-    // }
-
     if (path === "/characters" && method === HttpMethod.GET) {
         console.log(`✅ Ruta encontrada1: ${method} ${path}`);
     
@@ -56,7 +47,7 @@ export const characterRouter = async (
 
         if (!character) {
             res.statusCode = 404
-            res.end(JSON.stringify({ message: "Character nor found!" }))
+            res.end(JSON.stringify({ message: "Character not found!" }))
             return
         }
 
@@ -67,26 +58,49 @@ export const characterRouter = async (
 
     if (path === "/characters" && method === HttpMethod.POST) {
         console.log(`✅ Ruta encontrada3: ${method} ${path}`);
-        if (!(await authorizeRoles(Role.ADMIN, Role.USER)(req as AuthenticatedRequest, res as ServerResponse))) {
-            res.statusCode - 403
-            res.end(JSON.stringify({message: "Forbidden"}))
+
+        const isAuthenticated = await AuthenticatedToken(req as AuthenticatedRequest, res)
+        if (!isAuthenticated) {
+            res.statusCode = 401
+            res.end(JSON.stringify({ message: "Unauthorized" }))
             return
         }
-        
+
+        try {
+            const isAuthorized = await authorizeRoles(Role.ADMIN, Role.USER)(
+                req as AuthenticatedRequest, 
+                res as ServerResponse
+            )
+
+            if (!isAuthorized) {
+                res.statusCode = 403
+                res.end(JSON.stringify({message: "Forbidden"}))
+                return
+            }
+
+        } catch (authErr) {
+            console.error("❌ Error en authorizeRoles:", authErr)
+            res.statusCode = 500
+            res.end(JSON.stringify({message: "Internal Error in authorization"}))
+            return
+        }
+
         const body = await parseBody(req)
+        console.log("📦 Body recibido:", body)
+
         const result = safeParse(CharacterShema, body)
         if (result.issues) {
             res.statusCode = 400
             res.end(JSON.stringify({message: result.issues}))
+            console.log("❌ Errores de validación:", result.issues)
             return
         }
-        
+
         const character: Character = body
-        
-        addCharacter(character)
-        
+        const newCharacter = addCharacter(character)
+
         res.statusCode = 201
-        res.end(JSON.stringify(character))
+        res.end(JSON.stringify(newCharacter))
         return
     }
 
