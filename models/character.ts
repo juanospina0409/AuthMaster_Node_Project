@@ -6,8 +6,8 @@ import { minLength, object, pipe, string, type InferInput } from "valibot";
  * @alias pipe - Permite aplicar múltiples validaciones en cadena.
  */
 export const CharacterShema = object({
-    name: pipe(string(), minLength(10)), // El nombre debe ser una cadena con al menos 10 caracteres.
-    lastName: pipe(string(), minLength(10)), // El apellido debe ser una cadena con al menos 10 caracteres.
+    name: pipe(string(), minLength(4)), // El nombre debe ser una cadena con al menos 4 caracteres.
+    lastName: pipe(string(), minLength(4)), // El apellido debe ser una cadena con al menos 4 caracteres.
 });
 
 /**
@@ -47,8 +47,8 @@ export const getCharacterById = (id: number): Character | undefined => {
  * @returns {Character} - El personaje agregado con su ID generado.
  */
 export const addCharacter = (character: Character): Character => {
-    if (!characters.has(character.id)) {
-        console.error('Character id required')
+    if (character.id && !characters.has(character.id)) {
+        console.error(`Character with id ${character.id} already exists`);
         return character
     }
     const newCharacter = {
