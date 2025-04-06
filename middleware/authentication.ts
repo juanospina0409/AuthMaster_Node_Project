@@ -42,8 +42,10 @@ export const AuthenticatedToken = async (
         console.log("🔍 Token antes de verificar:", token); // Verifica el token usando la clave secreta
         const decoded = verify(token, config.jwtSecret);
         console.log("✅ Token decodificado correctamente:", decoded); // Agregar log
+
         req.user = decoded;
         console.log("✅ req.user asignado correctamente:", req.user);
+        
         return true;
     } catch (err) {
         console.error("❌ Error al verificar token:", err);
