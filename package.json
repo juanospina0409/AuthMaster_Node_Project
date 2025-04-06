@@ -1,5 +1,5 @@
 {
-  "name": "node_project",
+  "name": "authmaster-node-project",
   "module": "index.ts",
   "type": "module",
   "private": true,
