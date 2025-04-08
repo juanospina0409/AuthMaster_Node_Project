@@ -53,14 +53,15 @@ const User: Map<string, User> = new Map()
  */
 export const createUser = async (
   email: string,
-  password: string
+  password: string,
+  role: Role
 ): Promise<User> => {
   const hashedPassword = await hash(password, 10) //encriptar password antes de guardarla en el backend con hash de bcrypt
   const newUser: User = {
     id: Date.now(), // timestamp para definir el id del usuario cuando se creo
     email,
     password: hashedPassword,
-    role: Role.USER //se usa el enum, se obliga al usuario a utilizar el tipo de rol definido
+    role // asigna dinámicamente el rol que venga en la petición
   }
   User.set(email, newUser); //se guarda el usuario en el mapa
   return newUser; // return the created user

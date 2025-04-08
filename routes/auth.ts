@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "http";
-import { addRevokeToken, authSchema, createUser, findUserByEmail, HttpMethod, validatePassword, revokeUserToken } from "../models";
+import { addRevokeToken, authSchema, createUser, findUserByEmail, HttpMethod, validatePassword, revokeUserToken, Role } from "../models";
 import { parseBody } from "../utils/parseBody";
 import { safeParse } from "valibot";
 import { config } from "../config";
@@ -27,10 +27,12 @@ export const authRouter = async (req: IncomingMessage, res: ServerResponse) => {
             res.end(JSON.stringify({message: "Bad Request"}))
             return
         }
-        const {email, password} = body
+
+        // Validar el rol, si especificamente se asigna el rol de 'admin' se registram como administrador, de lo contrario como usuario
+        const role = body.role === "admin" ? Role.ADMIN : Role.USER
 
         try {
-            const user = await createUser(email, password)
+            const user = await createUser(body.email, body.password, role)
             console.log("✅ Usuario creado:", user);
             res.statusCode = 201
             res.end(JSON.stringify(user))
